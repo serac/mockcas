@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <SOAP-ENV:Header />
+  <SOAP-ENV:Body>
+    <Response xmlns="urn:oasis:names:tc:SAML:1.0:protocol" xmlns:samlp="urn:oasis:names:tc:SAML:1.0:protocol"
+              IssueInstant="{now}"
+              MajorVersion="1" MinorVersion="1" Recipient="{service}"
+              ResponseID="{id}">
+      <Status>
+        <StatusCode Value="samlp:Success"/>
+      </Status>
+      <Assertion xmlns="urn:oasis:names:tc:SAML:1.0:assertion"
+                 AssertionID="{id}"
+                 IssueInstant="{now}" Issuer="mockcas" MajorVersion="1" MinorVersion="1">
+        <AttributeStatement>
+          <Subject>
+            <NameIdentifier>john</NameIdentifier>
+          </Subject>
+          <Attribute AttributeName="uid" AttributeNamespace="http://www.ja-sig.org/products/cas/">
+            <AttributeValue>12345</AttributeValue>
+          </Attribute>
+          <Attribute AttributeName="UDC_IDENTIFIER" AttributeNamespace="http://www.ja-sig.org/products/cas/">
+            <AttributeValue>987654321</AttributeValue>
+          </Attribute>
+        </AttributeStatement>
+        <AuthenticationStatement AuthenticationInstant="{now}"
+                                 AuthenticationMethod="urn:oasis:names:tc:SAML:1.0:am:password">
+          <Subject>
+            <NameIdentifier>john</NameIdentifier>
+          </Subject>
+        </AuthenticationStatement>
+      </Assertion>
+    </Response>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

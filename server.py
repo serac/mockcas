@@ -129,9 +129,13 @@ class CASRequestHandler(BaseHTTPRequestHandler):
         Produces a 403 Forbidden response on authentication failure.
         """
         service = self.query('service')
+        is_saml = False
         if service is None:
-            self.send_response(400, 'Bad request')
-            return
+            service = self.query('TARGET')
+            if service is None:
+                self.send_response(400, 'Bad request')
+                return
+            is_saml = True
         value = self.headers['Authorization'] or ''
         if not value.startswith('Basic '):
             self.send_error(403, 'Forbidden')
@@ -142,7 +146,10 @@ class CASRequestHandler(BaseHTTPRequestHandler):
             return
         ticket = self.server.generate_ticket(service, credentials[0])
         self.send_response(302, 'Found')
-        self.send_header('Location', service + '?ticket=' + ticket)
+        if is_saml:
+            self.send_header('Location', service + '?SAMLart=' + ticket)
+        else:
+            self.send_header('Location', service + '?ticket=' + ticket)
         self.end_headers()
 
     def validate(self):
@@ -178,12 +185,18 @@ class CASRequestHandler(BaseHTTPRequestHandler):
 
     def samlValidate(self):
         """Validates the ticket via the "CAS-flavored" SAML 1.1 protocol."""
-        ticket = self.query('TARGET')
-        service = None
-        root = ET.fromstring(self.rfile.read())
+        service = self.query('TARGET')
+        ticket = None
+        length = self.headers['Content-Length']
+        if length is None:
+            length = 0
+        else:
+            length = int(length)
+        body = self.rfile.read(length).decode('utf-8')
+        root = ET.fromstring(body)
         assertions = root.findall('.//p:AssertionArtifact', SAML11_NS_MAP)
-        if len(assertions > 0):
-            service = assertions[0].text
+        if len(assertions) > 0:
+            ticket = assertions[0].text
         format_params = {'id': uuid.uuid4(), 'now': datetime.now(), 'service': service}
         try:
             username = self.server.validate_ticket(ticket, service)
@@ -216,6 +229,10 @@ class CASRequestHandler(BaseHTTPRequestHandler):
         except AttributeError:
             self.send_error(404, "Not Found")
         handler()
+
+    def do_POST(self):
+        """Handle POST requests by dispatching to a specific protocol URI handler by examining path."""
+        self.do_GET()
 
     def query(self, key):
         """Gets the first value of the named querystring parameter or None if no such key is defined."""
