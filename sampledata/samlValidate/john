@@ -29,6 +29,11 @@
             <NameIdentifier>john</NameIdentifier>
           </Subject>
         </AuthenticationStatement>
+        <Conditions NotBefore="{before}" NotOnOrAfter="{after}">
+          <AudienceRestrictionCondition>
+            <Audience>{service}</Audience>
+          </AudienceRestrictionCondition>
+        </Conditions>
       </Assertion>
     </Response>
   </SOAP-ENV:Body>
