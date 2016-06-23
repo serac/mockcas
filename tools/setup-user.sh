@@ -66,9 +66,16 @@ with open("{0}/samlValidate/{1}".format(data_dir, user), 'w') as f:
         <AuthenticationStatement AuthenticationInstant="{now}"
                                  AuthenticationMethod="urn:oasis:names:tc:SAML:1.0:am:password">
           <Subject>
-            <NameIdentifier>john</NameIdentifier>
+            <NameIdentifier>''')
+  f.write(user)
+  f.write('''</NameIdentifier>
           </Subject>
         </AuthenticationStatement>
+        <Conditions NotBefore="{before}" NotOnOrAfter="{after}">
+          <AudienceRestrictionCondition>
+            <Audience>{service}</Audience>
+          </AudienceRestrictionCondition>
+        </Conditions>
       </Assertion>
     </Response>
   </SOAP-ENV:Body>
