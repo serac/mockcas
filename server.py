@@ -2,7 +2,7 @@ import os.path
 import sys
 import uuid
 from base64 import b64decode
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import lru_cache
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import parse_qs
@@ -197,7 +197,9 @@ class CASRequestHandler(BaseHTTPRequestHandler):
         assertions = root.findall('.//p:AssertionArtifact', SAML11_NS_MAP)
         if len(assertions) > 0:
             ticket = assertions[0].text
-        format_params = {'id': uuid.uuid4(), 'now': datetime.now(), 'service': service}
+        before = datetime.utcnow() + timedelta(minutes=-5)
+        after = datetime.utcnow() + timedelta(minutes=5)
+        format_params = {'id': uuid.uuid4(), 'now': datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'), 'before': before.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), 'after': after.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), 'service': service}
         try:
             username = self.server.validate_ticket(ticket, service)
             response = self.server.get_response(self.cas_uri, username)
